@@ -1,0 +1,148 @@
+// DtmX WA — Prisma Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ WHATSAPP (WA Cloud API) — Automasi CS ============
+
+model WaBusiness {
+  id              String   @id @default(cuid())
+  name            String
+  phoneNumberId   String   @unique // Meta Phone Number ID
+  wabaId          String
+  accessTokenEnc  String   // token terenkripsi (jangan plaintext)
+  verified        Boolean  @default(false)
+  planId          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  conversations WaConversation[]
+  templates     WaTemplate[]
+  invoices      WaInvoice[]
+
+  @@map("wa_businesses")
+}
+
+model WaConversation {
+  id           String      @id @default(cuid())
+  businessId   String
+  waRecipient  String // nomor pelanggan E.164, mis. 6281xxxxxxxx
+  customerName String?
+  state        WaFlowState @default(GREETING)
+  isAiEnabled  Boolean     @default(true)
+  lastAi       Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  business WaBusiness  @relation(fields: [businessId], references: [id])
+  messages WaMessage[]
+
+  @@index([businessId, waRecipient])
+  @@map("wa_conversations")
+}
+
+model WaMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  direction      WaDirection
+  type           WaContentType
+  body           String
+  metaMsgId      String?
+  viaAi          Boolean  @default(false)
+  sentAt         DateTime @default(now())
+
+  conversation WaConversation @relation(fields: [conversationId], references: [id])
+
+  @@map("wa_messages")
+}
+
+model WaTemplate {
+  id        String          @id @default(cuid())
+  businessId String
+  name      String // slug Meta-approved, mis. HALO_ID_LANG
+  language  String          @default("id")
+  body      String          // boleh pakai {{1}} parameter
+  status    WaTemplateStatus
+  createdAt DateTime        @default(now())
+
+  business WaBusiness @relation(fields: [businessId], references: [id])
+
+  @@map("wa_templates")
+}
+
+model WaInvoice {
+  id         String          @id @default(cuid())
+  businessId String
+  amount     Float
+  currency   String          @default("IDR")
+  status     WaInvoiceStatus @default(PENDING)
+  note       String?
+  planId     String?
+  createdAt  DateTime        @default(now())
+  paidAt     DateTime?
+
+  business WaBusiness    @relation(fields: [businessId], references: [id])
+  proofs  WaInvoiceProof[]
+
+  @@map("wa_invoices")
+}
+
+model WaInvoiceProof {
+  id        String   @id @default(cuid())
+  invoiceId String
+  fileUrl   String
+  note      String?
+  createdAt DateTime @default(now())
+
+  invoice WaInvoice @relation(fields: [invoiceId], references: [id])
+
+  @@map("wa_invoice_proofs")
+}
+
+enum WaFlowState {
+  GREETING
+  MENU
+  QUOTE
+  CLOSE
+}
+
+enum WaDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum WaContentType {
+  TEXT
+  TEMPLATE
+}
+
+enum WaTemplateStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
+enum WaInvoiceStatus {
+  PENDING
+  PAID
+  REJECTED
+}
+
+// ============ MANUAL PAYMENT SETTINGS ============
+
+model PaymentSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique // mis. account_name / account_number / bank
+  label       String
+  value       String?
+  placeholder String?
+  order       Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  @@map("payment_settings")
+}
