@@ -1,6 +1,29 @@
+# Dependencies
 node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build output
 dist/
-.env
-*.log
-uploads/
+build/
 *.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Runtime / uploads
+uploads/
+tmp/
+*.log
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Prisma local artifacts
+prisma/migrations/dev/
