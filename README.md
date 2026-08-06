@@ -102,26 +102,85 @@ npm start
 
 API berjalan di `http://localhost:3001` (ubah `PORT` di `.env`), prefix `/api`.
 
+## Deploy otomatis (Railway)
+
+Proyek sudah dibekali `Procfile`, `railpack.json`, `railway.json`, dan `.npmrc` sehingga
+Railway bisa **auto-build** dari Git push:
+
+1. Buat **Service baru** di Railway → connect repositori GitHub `robi-sumitro/dtmx-whatsapp-automation`.
+2. Railway membaca `railpack.json` → otomatis menjalankan:
+   - `npm --prefix web install` (dep frontend)
+   - `npm run build` (backend `dist/` + SPA `web/dist`)
+   - `npm run prisma:deploy && node dist/main.js` (migrasi lalu serve API **dan** SPA di satu domain)
+3. Di tab **Variables**, isi variabel (lihat tabel di bawah). `DATABASE_URL`, `WA_*`,
+   `APP_ENCKEY`, `AUTH_*`, `JWT_SECRET` **wajib**.
+4. Siapkan **PostgreSQL** (Railway add-on / Postgres eksternal) → pakai connection string-nya untuk `DATABASE_URL`.
+5. Setelah deploy, cek **`/api/health`** → `{"status":"ok"}`. Buka root domain untuk panel SPA.
+6. Setelah nomor aktif, daftar **Webhook** Meta ke `https://{DOMAIN}/api/wa/webhook`
+   (lihat `docs/GO-LIVE-META.md`).
+
+> **Otomatis migrasi:** setiap deploy menjalankan `prisma migrate deploy` sehingga
+> skema DB mengikuti schema terbaru. Pastikan push berisi migra terbaru dari
+> `prisma migrate dev`.
+
+---
+
+## Referensi variabel environment (produksi)
+
+| Variabel | Wajib | Keterangan |
+| --- | --- | --- |
+| `DATABASE_URL` | ya | PostgreSQL URL |
+| `PORT` | no | default 3001 (Railway set otomatis via `$PORT`) |
+| `WA_VERIFY_TOKEN` | ya | verify token webhook Meta |
+| `WA_APP_SECRET` | ya | app secret Meta |
+| `WA_API_TOKEN` | ya | system user access token |
+| `APP_ENCKEY` | ya | kunci enkripsi token (≥32 random) |
+| `AUTH_EMAIL` / `AUTH_PASSWORD` | ya | login panel SPA |
+| `JWT_SECRET` | ya (prod) | signing key |
+| `JWT_EXPIRES_IN` | no | default 15m |
+
+---
+
+## Instalasi Lokal (dev)
+
+```bash
+# 1. Install dependency (root = backend)
+npm install
+
+# 2. Install frontend web/
+npm --prefix web install
+
+# 3. Siapkan .env dari contoh
+cp .env.example .env
+
+# 4. Buat DB PostgreSQL & migrasi (Prisma)
+npx prisma generate
+npx prisma migrate dev --name init
+
+# 5. Jalankan API (terminal 1)
+npm run start:dev
+
+# 6. Jalankan UI (terminal 2) → buka http://localhost:4200
+npm run web:dev
+```
+
+**Halaman UI:** Login, Ringkasan, Hubungkan, Inbox, Pembayaran.
+Login memakai `AUTH_EMAIL` / `AUTH_PASSWORD` dari `.env`.
+
+---
+
 ## Web UI (panel SPA)
 
 Frontend React + Vite + Tailwind berada di `web/`. Ikuti langkah:
 
 ```bash
-# Install frontend
-cd web && npm install && cd ..
-
-# Jalankan dev server (port 4200, proxy /api -> localhost:3001)
-npm run web:dev
-
-# Build produksi (output di web/dist)
-npm run web:build
+cd web && npm install && cd ..      # install frontend
+npm run web:dev                     # dev server, port 4200, proxy /api -> :3001
+npm run web:build                   # produksi, output di web/dist
 ```
 
-Halaman yang tersedia: **Login**, **Ringkasan**, **Hubungkan**, **Inbox**, **Pembayaran**.
-Login memakai `AUTH_EMAIL` / `AUTH_PASSWORD` dari `.env`.
-
-> **Penting:** pastikan API backend sudah berjalan (`npm run start:dev` di terminal terpisah)
-> sebelum `npm run web:dev`, karena panel mengandalkan `/api` yang di-proxy ke API.
+> Saat produksi (Railway), `web/dist` otomatis disajikan oleh API (ServeStaticModule),
+> sehingga domain root melayani SPA + API tanpa server tambahan.
 
 ---
 

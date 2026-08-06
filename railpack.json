@@ -1,0 +1,7 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "deploy": {
+    "buildCommand": "npm --prefix web install && npm run build",
+    "startCommand": "npm run prisma:deploy && node dist/main.js"
+  }
+}
