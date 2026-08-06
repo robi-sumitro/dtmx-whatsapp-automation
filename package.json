@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "description": "DtmX WA — Automasi Customer Service via WhatsApp Cloud API (Meta)",
-  "packageManager": "pnpm@11.18.0",
   "engines": {
     "node": ">=20"
   },
