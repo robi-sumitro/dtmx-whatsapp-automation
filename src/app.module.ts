@@ -5,6 +5,7 @@ import { SecurityModule } from './common/security.module';
 import { AIModule } from './ai/ai.module';
 import { WaModule } from './wa/wa.module';
 import { PaymentModule } from './payment/payment.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { PaymentModule } from './payment/payment.module';
     AIModule,
     WaModule,
     PaymentModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

@@ -102,6 +102,24 @@ npm start
 
 API berjalan di `http://localhost:3001` (ubah `PORT` di `.env`), prefix `/api`.
 
+## Web UI (panel SPA)
+
+Frontend React + Vite + Tailwind berada di `web/`. Ikuti langkah:
+
+```bash
+# Install frontend
+cd web && npm install && cd ..
+
+# Jalankan dev server (port 4200, proxy /api -> localhost:3001)
+npm run web:dev
+
+# Build produksi (output di web/dist)
+npm run web:build
+```
+
+Halaman yang tersedia: **Login**, **Ringkasan**, **Hubungkan**, **Inbox**, **Pembayaran**.
+Login memakai `AUTH_EMAIL` / `AUTH_PASSWORD` dari `.env`.
+
 ---
 
 ## Endpoint utama
