@@ -120,6 +120,9 @@ npm run web:build
 Halaman yang tersedia: **Login**, **Ringkasan**, **Hubungkan**, **Inbox**, **Pembayaran**.
 Login memakai `AUTH_EMAIL` / `AUTH_PASSWORD` dari `.env`.
 
+> **Penting:** pastikan API backend sudah berjalan (`npm run start:dev` di terminal terpisah)
+> sebelum `npm run web:dev`, karena panel mengandalkan `/api` yang di-proxy ke API.
+
 ---
 
 ## Endpoint utama
@@ -168,6 +171,8 @@ Login memakai `AUTH_EMAIL` / `AUTH_PASSWORD` dari `.env`.
 | `WA_APP_SECRET` | App secret Meta (verifikasi signature) | **ya** |
 | `WA_API_TOKEN` | System user access token | **ya** |
 | `APP_ENCKEY` | Kunci enkripsi token (≥32 random) | **ya** |
+| `AUTH_EMAIL` | Email login panel SPA | **ya** (untuk login UI) |
+| `AUTH_PASSWORD` | Password login panel SPA | **ya** (untuk login UI) |
 | `JWT_SECRET` | Signing key (dev) | no |
 | `JWT_EXPIRES_IN` | Masa berlaku token (default 15m) | no |
 | `CORS_ORIGINS` | Origin diizinkan (kosong = nonaktif) | no |
